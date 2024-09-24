@@ -4,6 +4,8 @@ import { Product } from "../models/Product";
 
 const productRepository = AppDataSource.getRepository(Product);
 
+// To add validtors to validate the schema befor exexuting the query
+
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const product = productRepository.create(req.body);
