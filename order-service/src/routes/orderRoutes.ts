@@ -6,14 +6,15 @@ import {
   getOrderById,
   updateOrder,
 } from "../controllers/orderController";
+import authMiddleware from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.post("/", createOrder);
-router.get("/", getOrders);
-router.get("/:id", getOrderById);
-router.put("/:id", updateOrder);
-router.delete("/:id", deleteOrder);
+router.post("/", authMiddleware, createOrder);
+router.get("/", authMiddleware, getOrders);
+router.get("/:id", authMiddleware, getOrderById);
+router.put("/:id", authMiddleware, updateOrder);
+router.delete("/:id", authMiddleware, deleteOrder);
 
 // To add shipping apis routers
 export default router;
