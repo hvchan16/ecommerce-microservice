@@ -1,21 +1,57 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import HomePage from './pages/HomePage';
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import setupAxiosInterceptors from './services/axiosConfig';
+import Login from './components/Login';
+import Signup from './components/Signup';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
+import Logout from './components/Logout';
+import HomePage from './pages/HomePage';
 
-const App = () => {
+const App: React.FC = () => {
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token')
+  );
+
+  useEffect(() => {
+    setupAxiosInterceptors(token);
+  }, [token]);
+
+  const login = (newToken: string) => {
+    setToken(newToken);
+    localStorage.setItem('token', newToken);
+  };
+
+  const logout = () => {
+    setToken(null);
+    localStorage.removeItem('token');
+  };
+
   return (
     <Router>
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-        </Routes>
-      </main>
+      <Routes>
+        {!token ? (
+          <>
+            <Route path='/' element={<HomePage />} />
+            <Route path="/login" element={<Login onLogin={login} />} />
+            <Route path="/signup" element={<Signup onSignup={login} />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path='/' element={<HomePage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/logout" element={<Logout onLogout={logout} />} />
+            <Route path="*" element={<Navigate to="/products" replace />} />
+          </>
+        )}
+      </Routes>
     </Router>
   );
 };

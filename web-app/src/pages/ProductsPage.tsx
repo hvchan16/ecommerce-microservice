@@ -57,13 +57,18 @@ const ProductsPage = () => {
     };
 
     return (
-        <div>
-            <h1>Products</h1>
+        <div className="container mt-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Products</h1>
+                <button className="btn btn-primary" onClick={handleAdd}>
+                    Add Product
+                </button>
+            </div>
+
             {loading ? (
                 <Loader />
             ) : (
                 <>
-                    <button onClick={handleAdd}>Add Product</button>
                     {showForm ? (
                         <ProductForm
                             product={editingProduct || undefined}
@@ -71,7 +76,11 @@ const ProductsPage = () => {
                             onCancel={handleCancel}
                         />
                     ) : (
-                        <ProductList products={products} onEdit={handleEdit} onDelete={handleDelete} />
+                        <ProductList
+                            products={products}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
                     )}
                 </>
             )}

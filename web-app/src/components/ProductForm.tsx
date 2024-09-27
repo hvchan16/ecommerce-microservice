@@ -29,29 +29,56 @@ const ProductForm = ({ product, onSubmit, onCancel }: ProductFormProps) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>{product ? 'Edit Product' : 'Add Product'}</h2>
-            <label>
-                Name:
-                <input name="name" value={formData.name} onChange={handleChange} required />
-            </label>
-            <label>
-                Price:
+        <form onSubmit={handleSubmit} className="container mt-4">
+            <h2 className="mb-4">{product ? 'Edit Product' : 'Add Product'}</h2>
+
+            <div className="form-group mb-3">
+                <label htmlFor="productName">Name:</label>
                 <input
-                    name="price"
+                    type="text"
+                    className="form-control"
+                    id="productName"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+
+            <div className="form-group mb-3">
+                <label htmlFor="productPrice">Price:</label>
+                <input
                     type="number"
+                    className="form-control"
+                    id="productPrice"
+                    name="price"
                     step="0.01"
                     value={formData.price}
                     onChange={handleChange}
                     required
                 />
-            </label>
-            <label>
-                Description:
-                <textarea name="description" value={formData.description} onChange={handleChange} required />
-            </label>
-            <button type="submit">{product ? 'Update' : 'Add'}</button>
-            <button type="button" onClick={onCancel}>Cancel</button>
+            </div>
+
+            <div className="form-group mb-4">
+                <label htmlFor="productDescription">Description:</label>
+                <textarea
+                    className="form-control"
+                    id="productDescription"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+
+            <div className="d-flex">
+                <button type="submit" className="btn btn-primary me-2">
+                    {product ? 'Update' : 'Add'}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={onCancel}>
+                    Cancel
+                </button>
+            </div>
         </form>
     );
 };
