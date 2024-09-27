@@ -6,12 +6,12 @@ import {
   Navigate,
 } from 'react-router-dom';
 import setupAxiosInterceptors from './services/axiosConfig';
-import Login from './components/Login';
-import Signup from './components/Signup';
-import ProductsPage from './pages/ProductsPage';
-import OrdersPage from './pages/OrdersPage';
-import Logout from './components/Logout';
-import HomePage from './pages/HomePage';
+import Login from './pages/common/Login';
+import Signup from './pages/common/Signup';
+import ProductsPage from './pages/products/ProductsPage';
+import OrdersPage from './pages/orders/OrdersPage';
+import Logout from './pages/common/Logout';
+import HomePage from './pages/common/HomePage';
 
 const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(

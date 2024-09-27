@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Product } from '../interfaces/Product';
+import { Product } from '../../interfaces/Product';
 import {
     getProducts,
     createProduct,
     updateProduct,
     deleteProduct,
-} from '../services/productService';
-import ProductList from '../components/ProductList';
-import ProductForm from '../components/ProductForm';
-import Loader from '../components/Loader';
+} from '../../services/productService';
+import ProductList from './ProductList';
+import ProductForm from './ProductForm';
+import Loader from '../../components/Loader';
 
 const ProductsPage = () => {
     const [products, setProducts] = useState<Product[]>([]);
