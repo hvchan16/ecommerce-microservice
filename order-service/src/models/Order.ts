@@ -1,12 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  ManyToOne,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { OrderItem } from "./OrderItem";
-import { User } from "./Users";
 
 @Entity()
 export class Order {
@@ -16,9 +9,12 @@ export class Order {
   @Column()
   customerName!: string;
 
-  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
-  items!: OrderItem[];
+  @Column()
+  userId!: number;
 
-  @ManyToOne(() => User, (user) => user.orders, { nullable: false })
-  user!: User;
+  @OneToMany(() => OrderItem, (item) => item.order, {
+    cascade: true,
+    eager: true,
+  })
+  items!: OrderItem[];
 }

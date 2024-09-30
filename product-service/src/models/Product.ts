@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-// To add validators to validate the schema
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
@@ -9,9 +8,9 @@ export class Product {
   @Column()
   name!: string;
 
-  @Column()
+  @Column("decimal", { precision: 10, scale: 2 })
   price!: number;
 
-  @Column()
+  @Column({ nullable: true })
   description!: string;
 }

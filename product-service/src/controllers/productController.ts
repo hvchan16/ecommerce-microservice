@@ -2,73 +2,101 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Product } from "../models/Product";
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: "client" | "user";
+  };
+}
+
 const productRepository = AppDataSource.getRepository(Product);
 
-// To add validtors to validate the schema befor exexuting the query
-
-export const createProduct = async (req: Request, res: Response) => {
+// Create Product
+export const createProduct = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
-    const product = productRepository.create(req.body);
-    const result = await productRepository.save(product);
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(400).json({ message: "Error adding product", error: error });
-  }
-};
+    const { name, price, description } = req.body;
 
-export const getProduct = async (req: Request, res: Response) => {
-  try {
-    const prodcuts = await productRepository.find();
-    res.status(200).json(prodcuts);
-  } catch (error) {
-    res.status(500).json({ message: "Error getting product", error: error });
-  }
-};
-
-export const getProductById = async (req: Request, res: Response) => {
-  try {
-    const product = await productRepository.findOneBy({
-      id: Number(req.params.id),
-    });
-    if (product) {
-      res.status(200).json(product);
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    if (!name || !price) {
+      return res.status(400).json({ message: "Name and price are required." });
     }
+
+    const existingProduct = await productRepository.findOneBy({ name });
+    if (existingProduct) {
+      return res.status(400).json({ message: "Product already exists." });
+    }
+
+    const product = productRepository.create({
+      name,
+      price,
+      description,
+    });
+
+    const savedProduct = await productRepository.save(product);
+    res.status(201).json(savedProduct);
   } catch (error) {
-    res.status(500).json({ message: "Error getting product", error: error });
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+// Get All Products
+export const getProducts = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const product = await productRepository.findOneBy({
-      id: Number(req.params.id),
-    });
-    if (product) {
-      productRepository.merge(product, req.body);
-      const result = await productRepository.save(product);
-      res.status(200).json(result);
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
+    const products = await productRepository.find();
+    res.status(200).json(products);
   } catch (error) {
-    res.status(400).json({ message: "Error updating product", error: error });
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+// Update Product
+export const updateProduct = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
-    const product = await productRepository.findOneBy({
-      id: Number(req.params.id),
-    });
-    if (product) {
-      await productRepository.remove(product);
-      res.status(200).json({ message: "Product deleted" });
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    const productId = Number(req.params.id);
+    const { name, price, description } = req.body;
+
+    const product = await productRepository.findOneBy({ id: productId });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
     }
+
+    if (name) product.name = name;
+    if (price) product.price = price;
+    if (description) product.description = description;
+
+    const updatedProduct = await productRepository.save(product);
+    res.status(200).json(updatedProduct);
   } catch (error) {
-    res.status(500).json({ message: "Error deleting product", error: error });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// Delete Product
+export const deleteProduct = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const productId = Number(req.params.id);
+
+    const product = await productRepository.findOneBy({ id: productId });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+
+    await productRepository.remove(product);
+    res.status(200).json({ message: "Product deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };

@@ -10,6 +10,7 @@ const Signup = ({ onSignup }: SignupProps) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState<'client' | 'user'>('user'); // Set default role as 'user'
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -23,18 +24,20 @@ const Signup = ({ onSignup }: SignupProps) => {
 
         try {
             const response = await axios.post(
-                'http://localhost:3002/auth/register',
+                'http://localhost:4000/auth/register',
                 {
                     email,
                     password,
+                    role, // Pass the selected role to backend
                 }
             );
+
             const token = response.data.token;
             if (token) {
                 onSignup(token);
-                navigate('/products');
+                navigate('/products'); // Navigate to product list page after signup
             } else {
-                navigate('/login');
+                navigate('/login'); // Navigate to login if token not returned
             }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error registering user');
@@ -86,6 +89,20 @@ const Signup = ({ onSignup }: SignupProps) => {
                         minLength={6}
                         autoComplete="new-password"
                     />
+                </div>
+
+                {/* Role Selection */}
+                <div className="form-group mb-3">
+                    <label htmlFor="role">Select Role:</label>
+                    <select
+                        id="role"
+                        className="form-control"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value as 'client' | 'user')}
+                    >
+                        <option value="user">User</option>
+                        <option value="client">Client</option>
+                    </select>
                 </div>
 
                 <div className="d-grid mb-3">

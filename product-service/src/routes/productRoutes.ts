@@ -1,18 +1,35 @@
 import { Router } from "express";
+import { authenticateJWT } from "../middleware/authorizeJWT";
+import { authorizeRoles } from "../middleware/authorizeRoles";
 import {
   createProduct,
-  deleteProduct,
-  getProduct,
-  getProductById,
+  getProducts,
   updateProduct,
+  deleteProduct,
 } from "../controllers/productController";
 
 const router = Router();
 
-router.get("/", getProduct);
-router.post("/", createProduct);
-router.get("/:id", getProductById);
-router.put("/:id", updateProduct);
-router.delete("/:id", deleteProduct);
+// Create Product - 'client' role
+router.post("/", authenticateJWT, authorizeRoles(["client"]), createProduct);
+
+// Get Products - 'client' and 'user' roles
+router.get(
+  "/",
+  authenticateJWT,
+  authorizeRoles(["client", "user"]),
+  getProducts
+);
+
+// Update Product - 'client' role
+router.put("/:id", authenticateJWT, authorizeRoles(["client"]), updateProduct);
+
+// Delete Product - 'client' role
+router.delete(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(["client"]),
+  deleteProduct
+);
 
 export default router;

@@ -15,7 +15,7 @@ const Login = ({ onLogin }: LoginProps) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:3002/auth/login', {
+            const response = await axios.post('http://localhost:4000/auth/login', {
                 email,
                 password,
             });
@@ -24,7 +24,7 @@ const Login = ({ onLogin }: LoginProps) => {
             onLogin(token);
             navigate('/');
         } catch (err: any) {
-            setError('Invalid credentials');
+            setError(err.response?.data?.message || 'Invalid credentials');
         }
     };
 

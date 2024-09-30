@@ -12,6 +12,7 @@ export const getOrderById = async (id: number): Promise<Order> => {
 };
 
 export const createOrder = async (order: Order): Promise<Order> => {
+  console.log(order);
   const response = await orderApi.post("/orders", order);
   return response.data;
 };

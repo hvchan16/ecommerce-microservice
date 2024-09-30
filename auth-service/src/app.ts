@@ -1,6 +1,5 @@
 import express from "express";
-import prodcutRoutes from "./routes/productRoutes";
-
+import authRoutes from "./routes/authRoutes";
 import cors from "cors";
 
 const app = express();
@@ -9,6 +8,6 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use("/api/products", prodcutRoutes);
+app.use("/auth", authRoutes);
 
 export default app;

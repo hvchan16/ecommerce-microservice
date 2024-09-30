@@ -1,6 +1,5 @@
 import { DataSource } from "typeorm";
-import { Order } from "./models/Order";
-import { OrderItem } from "./models/OrderItem";
+import { User } from "./models/Users";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -12,6 +11,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [Order, OrderItem],
+  entities: [User],
   synchronize: true,
+  logging: true,
 });
