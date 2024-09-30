@@ -1,8 +1,17 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getTokenPayload, TokenPayload } from '../utils/jwt';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
+
+    // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
+    const payload: TokenPayload | null = token ? getTokenPayload(token) : null;
+
+    const handleLogout = () => {
+        navigate('/logout');
+    };
 
     return (
         <>
@@ -24,23 +33,49 @@ const Navbar: React.FC = () => {
                     </button>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav me-auto">
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/products">
-                                    Products
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/orders">
-                                    Orders
-                                </Link>
-                            </li>
+                            {payload?.role === 'user' && (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/orders">
+                                        Orders
+                                    </Link>
+                                </li>
+                            )}
+                            {payload?.role === 'client' && (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/products">
+                                        Manage Products
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                         <ul className="navbar-nav ms-auto">
-                            <li className="nav-item">
-                                <button className="btn btn-outline-light" onClick={() => navigate('/logout')}>
-                                    Logout
-                                </button>
-                            </li>
+                            {payload ? (
+                                <>
+                                    <li className="nav-item">
+                                        <span className="navbar-text me-3">
+                                            Logged in as: {payload.email} ({payload.role})
+                                        </span>
+                                    </li>
+                                    <li className="nav-item">
+                                        <button className="btn btn-outline-light" onClick={handleLogout}>
+                                            Logout
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <>
+                                    <li className="nav-item">
+                                        <Link className="nav-link" to="/login">
+                                            Login
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link className="nav-link" to="/signup">
+                                            Signup
+                                        </Link>
+                                    </li>
+                                </>
+                            )}
                         </ul>
                     </div>
                 </div>

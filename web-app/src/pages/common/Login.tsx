@@ -20,7 +20,6 @@ const Login = ({ onLogin }: LoginProps) => {
                 password,
             });
 
-            console.log(response)
             const token = response.data.token;
             onLogin(token);
             navigate('/');
