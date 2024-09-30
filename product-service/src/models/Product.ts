@@ -8,6 +8,9 @@ export class Product {
   @Column()
   name!: string;
 
+  @Column()
+  userId!: number;
+
   @Column("decimal", { precision: 10, scale: 2 })
   price!: number;
 

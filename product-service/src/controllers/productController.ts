@@ -20,19 +20,30 @@ export const createProduct = async (
   try {
     const { name, price, description } = req.body;
 
+    // Validate required fields
     if (!name || !price) {
       return res.status(400).json({ message: "Name and price are required." });
     }
 
+    // Ensure only clients can create products
+    if (req.user?.role !== "client") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only clients can create products." });
+    }
+
+    // Check if product already exists
     const existingProduct = await productRepository.findOneBy({ name });
     if (existingProduct) {
       return res.status(400).json({ message: "Product already exists." });
     }
 
+    // Create product associated with the client
     const product = productRepository.create({
       name,
       price,
       description,
+      userId: req.user.id, // Associate with the client's userId
     });
 
     const savedProduct = await productRepository.save(product);
@@ -46,7 +57,18 @@ export const createProduct = async (
 // Get All Products
 export const getProducts = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const products = await productRepository.find();
+    let products;
+
+    if (req.user?.role === "client") {
+      // Clients see only their products
+      products = await productRepository.findBy({ userId: req.user.id });
+    } else if (req.user?.role === "user") {
+      // Users see all products
+      products = await productRepository.find();
+    } else {
+      return res.status(403).json({ message: "Forbidden: Invalid role." });
+    }
+
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -63,9 +85,21 @@ export const updateProduct = async (
     const productId = Number(req.params.id);
     const { name, price, description } = req.body;
 
-    const product = await productRepository.findOneBy({ id: productId });
+    // Ensure only clients can update products
+    if (req.user?.role !== "client") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only clients can update products." });
+    }
+
+    const product = await productRepository.findOneBy({
+      id: productId,
+      userId: req.user.id,
+    });
     if (!product) {
-      return res.status(404).json({ message: "Product not found." });
+      return res
+        .status(404)
+        .json({ message: "Product not found or not owned by you." });
     }
 
     if (name) product.name = name;
@@ -88,9 +122,21 @@ export const deleteProduct = async (
   try {
     const productId = Number(req.params.id);
 
-    const product = await productRepository.findOneBy({ id: productId });
+    // Ensure only clients can delete products
+    if (req.user?.role !== "client") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only clients can delete products." });
+    }
+
+    const product = await productRepository.findOneBy({
+      id: productId,
+      userId: req.user.id,
+    });
     if (!product) {
-      return res.status(404).json({ message: "Product not found." });
+      return res
+        .status(404)
+        .json({ message: "Product not found or not owned by you." });
     }
 
     await productRepository.remove(product);

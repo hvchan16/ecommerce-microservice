@@ -24,7 +24,9 @@ export const authenticateJWT = (
     jwt.verify(token, JWT_SECRET, (err, user) => {
       if (err) {
         console.log("forbidden", err);
-        return res.sendStatus(403);
+        return res
+          .sendStatus(403)
+          .json({ message: "Unauthorized: No token provided." });
       }
 
       req.user = user as { id: number; email: string; role: "client" | "user" };
@@ -32,6 +34,6 @@ export const authenticateJWT = (
     });
   } else {
     console.log("something went wrong");
-    res.sendStatus(401); // Unauthorized
+    res.sendStatus(401).json({ message: "Unauthorized: Invalid token" }); // Unauthorized
   }
 };

@@ -12,6 +12,7 @@ import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
 import Logout from './pages/common/Logout';
 import HomePage from './pages/common/HomePage';
+import Navbar from './components/Navbar';
 
 const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(
@@ -34,6 +35,9 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      {token &&
+        <Navbar />
+      }
       <Routes>
         {!token ? (
           <>

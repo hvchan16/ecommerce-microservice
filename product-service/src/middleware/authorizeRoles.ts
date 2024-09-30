@@ -13,7 +13,7 @@ export const authorizeRoles = (roles: Array<"client" | "user">) => {
     if (req.user && roles.includes(req.user.role)) {
       next();
     } else {
-      res.sendStatus(403); // Forbidden
+      res.sendStatus(403).json({ message: "Forbidden: Insufficient rights." }); // Forbidden
     }
   };
 };
