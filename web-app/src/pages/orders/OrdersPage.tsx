@@ -1,24 +1,23 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Order } from '../../interfaces/Order';
 import { getOrders, createOrder, updateOrder } from '../../services/orderService';
 import OrderList from './OrderList';
 import OrderForm from './OrderForm';
-import Loader from '../../components/Loader';
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [showForm, setShowForm] = useState<boolean>(false);
-    const [editingOrder, setEditingOrder] = useState<Order | null>(null); // Store the order being edited
+    const [editingOrder, setEditingOrder] = useState<Order | null>(null); // Stores the order being edited
 
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const orderList = await getOrders();
-            setOrders(orderList);
+            const fetchedOrders = await getOrders();
+            setOrders(fetchedOrders);
         } catch (error: any) {
             console.error('Error fetching orders:', error);
-            alert(error.response?.data?.message || 'Error fetching orders.');
+            alert(error.response?.data?.message || 'Failed to fetch orders.');
         }
         setLoading(false);
     };
@@ -28,28 +27,29 @@ const OrdersPage = () => {
     }, []);
 
     const handleAdd = () => {
-        setEditingOrder(null); // Clear the editing order when adding a new order
+        setEditingOrder(null); // Clear any existing editing order
         setShowForm(true);
     };
 
     const handleEdit = (order: Order) => {
-        setEditingOrder(order); // Load the selected order into the form
+        setEditingOrder(order);
         setShowForm(true);
     };
 
     const handleFormSubmit = async (order: Order) => {
         try {
-            if (editingOrder) {
-                await updateOrder(editingOrder.id!, order); // Update existing order
+            if (editingOrder && editingOrder.id) {
+                await updateOrder(editingOrder.id, order);
+                alert('Order updated successfully.');
             } else {
-                await createOrder(order); // Create new order
+                await createOrder(order);
+                alert('Order created successfully.');
             }
-            alert('Order saved successfully.');
             setShowForm(false);
             fetchOrders();
         } catch (error: any) {
             console.error('Error saving order:', error);
-            alert(error.response?.data?.message || 'Error saving order.');
+            alert(error.response?.data?.message || 'Failed to save order.');
         }
     };
 
@@ -59,24 +59,23 @@ const OrdersPage = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Orders</h1>
-            {loading ? (
-                <Loader />
+            <h1>Manage Your Orders</h1>
+            <button className="btn btn-success mb-3" onClick={handleAdd}>
+                Create New Order
+            </button>
+            {showForm ? (
+                <OrderForm
+                    onSubmit={handleFormSubmit}
+                    onCancel={handleCancel}
+                    editingOrder={editingOrder || undefined}
+                />
             ) : (
-                <>
-                    <button className="btn btn-primary mb-3" onClick={handleAdd}>
-                        Create Order
-                    </button>
-                    {showForm ? (
-                        <OrderForm
-                            onSubmit={handleFormSubmit}
-                            onCancel={handleCancel}
-                            editingOrder={editingOrder || undefined} // Pass the order to be edited
-                        />
-                    ) : (
-                        <OrderList orders={orders} setOrders={setOrders} onEdit={handleEdit} />
-                    )}
-                </>
+                <OrderList
+                    orders={orders}
+                    setOrders={setOrders}
+                    onEdit={handleEdit}
+                    loading={loading}
+                />
             )}
         </div>
     );

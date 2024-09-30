@@ -14,11 +14,17 @@ const OrderForm = ({ onSubmit, onCancel, editingOrder }: OrderFormProps) => {
     const [orderItems, setOrderItems] = useState<OrderItem[]>(editingOrder?.items || []);
     const [products, setProducts] = useState<Product[]>([]);
     const [quantity, setQuantity] = useState<number>(1);
+    const [deliveryLocation, setDeliveryLocation] = useState<string>(editingOrder?.deliveryLocation || '');
 
     useEffect(() => {
         const fetchProducts = async () => {
-            const productList = await getProducts();
-            setProducts(productList);
+            try {
+                const productList = await getProducts();
+                setProducts(productList);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                alert('Failed to load products.');
+            }
         };
         fetchProducts();
     }, []);
@@ -44,21 +50,37 @@ const OrderForm = ({ onSubmit, onCancel, editingOrder }: OrderFormProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!deliveryLocation.trim()) {
+            alert("Delivery location is required.");
+            return;
+        }
+        if (orderItems.length === 0) {
+            alert("At least one order item is required.");
+            return;
+        }
         const order: Order = {
             customerName,
+            deliveryLocation,
             items: orderItems,
         };
         onSubmit(order);
-        setCustomerName('');
-        setOrderItems([]);
+        // Reset form fields
+        if (!editingOrder) {
+            setCustomerName('');
+            setDeliveryLocation('');
+            setOrderItems([]);
+            setQuantity(1);
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="container mt-4">
             <h2>{editingOrder ? 'Edit Order' : 'Create Order'}</h2>
+
             <div className="mb-3">
                 <label className="form-label">Customer Name:</label>
                 <input
+                    type="text"
                     className="form-control"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
@@ -66,8 +88,19 @@ const OrderForm = ({ onSubmit, onCancel, editingOrder }: OrderFormProps) => {
                 />
             </div>
 
-            <div>
-                <h3>Add Items</h3>
+            <div className="mb-3">
+                <label className="form-label">Delivery Location:</label>
+                <input
+                    type="text"
+                    className="form-control"
+                    value={deliveryLocation}
+                    onChange={(e) => setDeliveryLocation(e.target.value)}
+                    required
+                />
+            </div>
+
+            <div className="mb-3">
+                <h4>Add Items</h4>
                 <div className="row">
                     {products.map((product) => (
                         <div className="col-md-4 mb-3" key={product.id}>
@@ -75,7 +108,6 @@ const OrderForm = ({ onSubmit, onCancel, editingOrder }: OrderFormProps) => {
                                 <div className="card-body">
                                     <h5 className="card-title">{product.name}</h5>
                                     <p className="card-text">Price: ${product.price}</p>
-                                    <p className="card-text">No Image Available</p>
                                     <label>Quantity:</label>
                                     <input
                                         type="number"
@@ -98,30 +130,35 @@ const OrderForm = ({ onSubmit, onCancel, editingOrder }: OrderFormProps) => {
                 </div>
             </div>
 
-            <div>
-                <h4>Order Items:</h4>
-                <ul className="list-group mb-3">
-                    {orderItems.map((item, index) => (
-                        <li className="list-group-item d-flex justify-content-between align-items-center" key={index}>
-                            <span>
-                                Product ID: {item.productId}, Quantity: {item.quantity}
-                            </span>
-                            <button
-                                type="button"
-                                className="btn btn-danger btn-sm"
-                                onClick={() => removeItem(item.productId)}
-                            >
-                                Remove
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {orderItems.length > 0 && (
+                <div className="mb-3">
+                    <h4>Order Items:</h4>
+                    <ul className="list-group">
+                        {orderItems.map((item, index) => {
+                            const product = products.find(p => p.id === item.productId);
+                            return (
+                                <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        {product ? product.name : `Product ID: ${item.productId}`}, Quantity: {item.quantity}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => removeItem(item.productId)}
+                                    >
+                                        Remove
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
 
-            <button type="submit" className="btn btn-primary me-2">
+            <button type="submit" className="btn btn-success me-2">
                 {editingOrder ? 'Update Order' : 'Create Order'}
             </button>
-            <button type="button" className="btn btn-danger" onClick={onCancel}>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>
                 Cancel
             </button>
         </form>
