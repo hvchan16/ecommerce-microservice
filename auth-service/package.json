@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/app.ts",
+    "start": "node build/index.js",
     "build": "tsc -p .",
-    "serve": "node build/app.js",
-    "dev": "ts-node-dev --respawn  --transpile-only src/index.ts",
+    "serve": "node build/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

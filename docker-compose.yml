@@ -1,0 +1,174 @@
+version: "3.8"
+
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      - NODE_ENV=development
+      - PORT=${AUTH_SERVICE_PORT}
+      - DB_HOST=${AUTH_DB_HOST}
+      - DB_PORT=${AUTH_DB_PORT}
+      - DB_USERNAME=${AUTH_DB_USERNAME}
+      - DB_PASSWORD=${AUTH_DB_PASSWORD}
+      - DB_DATABASE=${AUTH_DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
+    depends_on:
+      - mysql-auth
+    networks:
+      - app-network
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      - NODE_ENV=development
+      - PORT=${ORDER_SERVICE_PORT}
+      - DB_HOST=${ORDER_DB_HOST}
+      - DB_PORT=${ORDER_DB_PORT}
+      - DB_USERNAME=${ORDER_DB_USERNAME}
+      - DB_PASSWORD=${ORDER_DB_PASSWORD}
+      - DB_DATABASE=${ORDER_DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - PRODCUT_SERVICE_URL=${PRODCUT_SERVICE_URL}
+      - SHIPPING_API_URL=${SHIPPING_API_URL}
+      - SHIPPING_API_KEY=${SHIPPING_API_KEY}
+    ports:
+      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
+    depends_on:
+      - mysql-order
+      - mock-shipping-api
+    networks:
+      - app-network
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      - NODE_ENV=development
+      - PORT=${PRODUCT_SERVICE_PORT}
+      - DB_HOST=${PRODUCT_DB_HOST}
+      - DB_PORT=${PRODUCT_DB_PORT}
+      - DB_USERNAME=${PRODUCT_DB_USERNAME}
+      - DB_PASSWORD=${PRODUCT_DB_PASSWORD}
+      - DB_DATABASE=${PRODUCT_DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
+    depends_on:
+      - mysql-product
+    networks:
+      - app-network
+
+  mock-shipping-api:
+    build:
+      context: ./mock-shipping-api
+      dockerfile: Dockerfile
+    container_name: mock-shipping-api
+    environment:
+      - NODE_ENV=development
+      - PORT=${MOCK_SHIPPING_API_PORT}
+    ports:
+      - "${MOCK_SHIPPING_API_PORT}:${MOCK_SHIPPING_API_PORT}"
+    networks:
+      - app-network
+
+  web-app:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    container_name: web-app
+    environment:
+      - NODE_ENV=development
+        - PORT=${WEB_APP_PORT}
+        - REACT_APP_PRODUCT_API_BASE_URL=${REACT_APP_PRODUCT_API_BASE_URL}
+        - REACT_APP_ORDER_API_BASE_URL=${REACT_APP_ORDER_API_BASE_URL}
+        - REACT_APP_AUTH_TOKEN=${REACT_APP_AUTH_TOKEN}
+        - REACT_APP_AUTH_SERVICE_URL=${REACT_APP_AUTH_SERVICE_URL}
+    ports:
+      - "${WEB_APP_PORT}:${WEB_APP_PORT}"
+    depends_on:
+      - auth-service
+      - order-service
+      - product-service
+      - mock-shipping-api
+    networks:
+      - app-network
+
+  mysql-auth:
+    image: mysql:8.0
+    container_name: mysql-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${AUTH_DB_DATABASE}
+      MYSQL_USER: ${AUTH_DB_USERNAME}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_auth_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  mysql-order:
+    image: mysql:8.0
+    container_name: mysql-order
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${AUTH_DB_DATABASE}
+      MYSQL_USER: ${AUTH_DB_USERNAME}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_order_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  mysql-product:
+    image: mysql:8.0
+    container_name: mysql-product
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${AUTH_DB_DATABASE}
+      MYSQL_USER: ${AUTH_DB_USERNAME}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_product_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx-server
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - order-service
+      - product-service
+      - mock-shipping-api
+      - web-app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_auth_data:
+  mysql_order_data:
+  mysql_product_data:
